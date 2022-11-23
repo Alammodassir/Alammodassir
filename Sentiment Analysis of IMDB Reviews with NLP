@@ -1,0 +1,126 @@
+This article was published as a part of the Data Science Blogathon.
+IMDB Reviews with NLP
+                                                                                 Source – Insofe
+Introduction
+A subfield of Natural Language Processing and Conversational AI, Sentiment Analysis focuses on extracting meaningful user sentiment and assigning them scores through Natural Language Processing techniques. It helps understand user sentiments and opinions for a particular service and product. Hence, it heavily impacts improving the business logic and overall profit of an organization by bringing what their customers prefer. In this article, we will have at look at  the sentiment analysis of IMDB Reviews with NLP and Transfer Learning.
+
+Sentiment Analysis can be carried out by text preprocessing using the standard NLP procedures and applying Language Understanding Algorithms to predict user sentiments.
+
+Tutorial Overview & Prerequisites
+This tutorial will get your hands on Sentiment Analysis with Natural Language Processing practices and Transfer Learning to analyze IMDB movie reviews’ sentiments.
+
+Dataset used —
+
+IMDB [Large] Movie Review Dataset
+
+Prerequisites —
+
+Loading Image
+Become a Full-Stack Data Scientist
+Power Ahead in your AI ML Career | No Pre-requisites Required
+Library — PyTorch Torchtext, FastAI
+
+ 
+
+Section 1 Text Preprocessing
+Before acting on any data-driven problem statement in Natural Language Processing, processing the data is the most tedious and crucial task. While analysing the IMDB Reviews with NLP, we will be going through a huge set of data. PyTorch’s Torchtext library provides text preprocessing power for large datasets in very few lines of code!
+
+Let’s do that first-
+
+Step 1: Text tokenization with SpaCy
+
+We are converting the entire vocab here to lowercase to avoid misconceptions and errors by the model.
+
+textdata = data.Field(lower=True, tokenize=spacy_tok)
+ 
+
+Step 2: Preparing the data to be fed for Language Modelling and Understanding
+
+After the text preprocessing part in IMDB Reviews with NLP, we would be focusing on preparing the data that has to be fed for Language Modelling. Let’s get our data prepared!
+
+modeldata = LanguageModelData(PATH, textdata, **FILES, bs=64, bptt=70, min_freq=10)
+Let us understand a few parameters here-
+
+Firstly, FastAI is a library authentically designed for fine-tuning pre-trained models in very minimal lines of code. It focuses on developing language models with pre-trained weights which can be fine-tuned to our task-specific dataset.
+
+Now, let’s look at what arguments these parameters in the above line of code takes-
+
+PATH — takes the way where our dataset is saved
+text data — the text data we just preprocessed in step 1
+*FILES — converts our dataset into the form of key-value pairs or a dictionary data type.
+bs — bs is the batch-size taken into account
+bptt — short for Backpropagation Through Time. It is a training algorithm used to update weights in recurrent neural networks like LSTMs.
+min_freq is the lowest possible word frequency value, below which words will be left uncategorized below.
+ 
+
+Step 3: Vectorizing words for model understanding
+
+Being a data-science and machine-learning practitioner, you must be well acquainted with machine learning models that cannot interpret words or English vocab. A machine’s only vocab are numbered, what we call vectors!
+
+Torchtext by PyTorch does a fantastic job for us by automating this task by its vocab object.
+
+textdata.vocab
+Now that our data is ready to be fed to the model let’s jump to the next section!
+
+ 
+
+Section 2 Model Pre-training
+Pre-trained models are trained on large amounts of text corpora and are highly robust and powerful. We call Transfer Learning to use such pre-trained models and fine-tune them for our specific task. In a nutshell, we are transferring the knowledge gained by a model to fine-tune and achieve the task of a minor use case.
+
+We will use a pre-trained model here for our sentiment analysis task, as it will give better results than traditional Scikit-learn models and will be more robust and less error-prone.
+
+Step 1: Setting up the learner object
+
+Now create a FastAI learner object and inject a fit function into it. It fits or feeds our data to the model parameters. Learner stores an optimizer, a model, and the data to train it.
+
+learner = modeldata.get_model(opt_fn, em_sz, nh, nl,dropouti=0.05, dropout=0.05, wdrop=0.1, dropoute=0.02, dropouth=0.05)
+Let’s see the arguments that the parameters given to get_model function map to-
+
+opt_fn — As mentioned earlier, the optimizer function optimizes the model performance by using a combination of dropout and regularization. Dropouts are regularization technique that prevents model overfitting by diluting the model, or in simple words, dropout chooses some neurons at the end of the neural network and punishes or restricts them to learn to make the network more generalized and prevent it from learning so much accurately that a slightly inaccurate data may lead it to perform poorly. Here, opt_fn uses the AWD LSTM language model, which has a robust average SGD function that takes in an average of the last few weights to reduce overfitting.
+     Note — If you are a theory-conscious learner like me, read more about AWD LSTM here.
+
+em_sz — The embedding size that usually defines the size of the output vectors from this layer for each word.
+nh — The secret sauce to any neural network, nh is the number of hidden layers. Hidden layers are located between the input (embedding layer) and output (dense layer), responsible for modelling the data and finding patterns. No rocket science! It performs nonlinear vector transformations to data fed to the input layer for the output layer to apply activation functions for predicting outputs!
+nl — Nothing special about this one. Just the number of layers you want in your customized Neural Network.
+dropout — Dropout value, which is by default 0.05 to 0.1
+dropouti, wdrop, dropoute, dropouth — Time parameters can be ignored.
+Step 2: Fitting the learner object
+
+Loading Image
+Become a Full-Stack Data Scientist
+Power Ahead in your AI ML Career | No Pre-requisites Required
+Now that our learner object is ready, we can fit it into our data.
+
+learner.fit(3e-3, 4, wds=1e-6, cycle_len=1, cycle_mult=2)
+Let’s see the arguments that the parameters given to get_model function map to-
+
+3e-3 — This is the value set for the learning rate of the network.
+wds — This is the l2 regularization parameter with default value 1e-6. L2 regularization lowers the likelihood of overfitting by keeping low values of weights and biases.
+cycle_len — This parameter is associated with Stochastic Gradient Descent Restart. Not to be feared, it simply governs which of the SGD epochs the learning rate will start decreasing and back it up again. So, the value of 1 decides that the learning rate will be reduced throughout one epoch or cycle.
+cycle_mult — This parameter multiplies the length of an epoch or cycle by an integer (here, 2) as soon as the previous one is finished.
+ 
+
+Section 3 Model Fine-tuning
+Now that our pre-trained model is fed the data and fit with the desirable parameters, it is time we fine-tune it for our sentiment analysis task and see the performance!
+
+model = text_classifier_learner(textdata, AWD_LSTM, drop_mult=0.5)
+model.freeze_to(-3)
+model.fit(lr, 1, metrics=[accuracy])
+model.unfreeze()
+model.fit(lr, 1, metrics=[accuracy], cycle_len=1)
+The model.freeze_to(-3) freeze the model up to the 3rd bottom-most layer and fits it, unfreezes, and repeats the same process until the entire training is complete!
+
+ 
+
+Section 4 Model Performance Evaluation
+The final step is the performance evaluation of this data which is about analysing IMDB Reviews with NLP. Now that we have fine-tuned and trained our model and the transfer learning part is over, let us peek into how the model works!
+
+model.load('first')
+model.predict("This is by far the best sci-fi thriller. Enjoyed a lot!")
+Let’s run this and see the results-
+
+(Category pos, tensor(1), tensor([7.5679e-04, 9.9456e-01]))
+Great! It gives a correct sentiment score alongside classifying the text as positive, with an accuracy of 99%!
+
+However, the overall model accuracy is 0.943960, which is approximately 94.39%!
+
