@@ -977,8 +977,4 @@ y += 2 * dy + 100;
 return PAGE_EXISTS;
 }
 }
-Footer
-© 2022 GitHub, Inc.
-Footer navigation
-Terms
-Privacy
+
